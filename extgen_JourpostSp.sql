@@ -549,10 +549,20 @@ BEGIN
        ) 
 
 -- edited by developer
-
- 
+-- add attribute value nomor plat to journal entries
 IF @id = 'AP Dist' And @acct = '614002'
 BEGIN 
+   INSERT INTO dbo.dim_attribute_override (value, attribute, subscriber_object_rowpointer,subscriber_object_name)
+   SELECT
+     @nomorPlat,
+      'AnalysisAttribute01',
+      irp.RowPointer,
+   'Ledger'
+   FROM
+      @InsertedRowPointer as irp;
+END
+ELSE IF @id = 'AR Dist' And @acct = '614002'
+BEGIN
    INSERT INTO dbo.dim_attribute_override (value, attribute, subscriber_object_rowpointer,subscriber_object_name)
    SELECT
      @nomorPlat,
