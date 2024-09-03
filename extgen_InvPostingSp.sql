@@ -2233,12 +2233,14 @@ BEGIN
    , arinvd.ref_type     -- Extfin
    , arinvd.NoteExistsFlag -- Extfin
    , arinvd.Uf_nomor_plat -- developer edit
+   , arinvd.Uf_employee -- developer edit
    FROM arinvd
    WHERE arinvd.cust_num = @ArinvCustNum
    AND   arinvd.inv_num  = @ArinvInvNum
    AND   arinvd.inv_seq  = @ArinvInvSeq
 
 Declare @nomorPlat varchar(50) --developer edit
+Declare @employee varchar(175) --developer edit
 
    OPEN ArinvdCrs
    WHILE @Severity = 0
@@ -2263,6 +2265,7 @@ Declare @nomorPlat varchar(50) --developer edit
       , @ArinvdRefType    -- Extfin
       , @ArinvdNoteExistsFlag --Extfin
       , @nomorPlat --developer edit
+      , @employee --developer edit
       IF @@FETCH_STATUS = -1
          BREAK
 
@@ -2394,7 +2397,8 @@ Declare @nomorPlat varchar(50) --developer edit
                         , @Cancellation      = @ArinvCancellation
                         , @last_seq          = @LastSeq OUTPUT
                         , @Infobar           = @Infobar OUTPUT
-                        , @nomorPlat= @nomorPlat
+                        , @nomorPlat= @nomorPlat -- developer edit
+                        , @employee = @employee -- developer edit
 
          IF @Severity  <> 0
             GOTO ERROR_OUT

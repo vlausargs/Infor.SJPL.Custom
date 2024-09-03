@@ -1783,12 +1783,14 @@ SELECT
    , aptrxd.MX_iso_country_code --MAH 0.1
    , aptrxd.MX_diot_trans_type --MAH 0.1
    , aptrxd.Uf_nomor_plat --developer edit
+   , aptrxd.Uf_employee --developer edit
 FROM aptrxd WITH (UPDLOCK)
 WHERE aptrxd.vend_num = @AptrxVendNum AND
      aptrxd.voucher = @AptrxVoucher
 ORDER BY aptrxd.vend_num, aptrxd.voucher, aptrxd.dist_seq
  
 Declare @nomorPlat varchar(50) --developer edit
+Declare @employee varchar(175) --developer edit
 
 OPEN AptrxdCrs
 WHILE @Severity = 0
@@ -1820,7 +1822,7 @@ BEGIN
        , @Uf_country --MAH 0.1
        , @Uf_diot_trans --MAH 0.1
        , @nomorPlat --developer edit
-
+       , @employee --developer edit
    IF @@FETCH_STATUS = -1
        BREAK
 
@@ -2008,7 +2010,9 @@ BEGIN
       , @last_seq   = @LastSeq      OUTPUT
       , @Infobar    = @Infobar      OUTPUT
       , @proj_trans_num = @ProjTransNum
-      , @nomorPlat= @nomorPlat
+      , @nomorPlat= @nomorPlat   -- developer edit
+      , @employee = @employee -- developer edit
+
 
 IF @PolandEnabled = 1 AND @FeatureCSIB78841Active = 1
 BEGIN

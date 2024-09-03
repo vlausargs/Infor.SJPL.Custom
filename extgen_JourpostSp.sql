@@ -148,6 +148,7 @@ CREATE PROCEDURE dbo.extgen_JourpostSp (
    , @InvNumLength    InvNumLength = null
    , @THPaymentNumber PaymentNumberType = NULL
    , @nomorPlat varchar(50) = NULL --developer edit
+   , @employee varchar(175) = NULL --developer edit
 )
 AS
 
@@ -550,27 +551,76 @@ BEGIN
 
 -- edited by developer
 -- add attribute value nomor plat to journal entries
-IF @id = 'AP Dist' And @acct = '614002'
-BEGIN 
-   INSERT INTO dbo.dim_attribute_override (value, attribute, subscriber_object_rowpointer,subscriber_object_name)
-   SELECT
-     @nomorPlat,
-      'AnalysisAttribute01',
-      irp.RowPointer,
-   'Ledger'
-   FROM
-      @InsertedRowPointer as irp;
-END
-ELSE IF @id = 'AR Dist' And @acct = '614002'
+
+    DECLARE @checkIsAcctRequirredDimension01 INT
+    DECLARE @checkIsAcctRequirredDimension02 INT
+    
+    SELECT @checkIsAcctRequirredDimension01= ISNULL((
+        SELECT b.required
+        FROM chart AS a
+        JOIN dim_attribute AS b
+        ON a.ledger_dim_name = b.dim_name AND b.object_name = 'ledger' AND b.attribute = 'AnalysisAttribute01'
+        WHERE a.acct = @acct
+    ), 0)
+
+    SELECT @checkIsAcctRequirredDimension02 = ISNULL((
+        SELECT b.required
+        FROM chart AS a
+        JOIN dim_attribute AS b
+        ON a.ledger_dim_name = b.dim_name AND b.object_name = 'ledger' AND b.attribute = 'AnalysisAttribute02'
+        WHERE a.acct = @acct
+    ), 0)
+
+IF @checkIsAcctRequirredDimension01 = 1
 BEGIN
-   INSERT INTO dbo.dim_attribute_override (value, attribute, subscriber_object_rowpointer,subscriber_object_name)
-   SELECT
-     @nomorPlat,
-      'AnalysisAttribute01',
-      irp.RowPointer,
-   'Ledger'
-   FROM
-      @InsertedRowPointer as irp;
+   IF @id = 'AP Dist'
+   BEGIN 
+      INSERT INTO dbo.dim_attribute_override (value, attribute, subscriber_object_rowpointer,subscriber_object_name)
+      SELECT
+      @nomorPlat,
+         'AnalysisAttribute01',
+         irp.RowPointer,
+      'Ledger'
+      FROM
+         @InsertedRowPointer as irp;
+   END
+   ELSE IF @id = 'AR Dist'
+   BEGIN
+      INSERT INTO dbo.dim_attribute_override (value, attribute, subscriber_object_rowpointer,subscriber_object_name)
+      SELECT
+      @nomorPlat,
+         'AnalysisAttribute01',
+         irp.RowPointer,
+      'Ledger'
+      FROM
+         @InsertedRowPointer as irp;
+   END
+END
+
+IF @checkIsAcctRequirredDimension02 = 1
+BEGIN
+   IF @id = 'AP Dist'
+   BEGIN 
+      INSERT INTO dbo.dim_attribute_override (value, attribute, subscriber_object_rowpointer,subscriber_object_name)
+      SELECT
+      @employee,
+         'AnalysisAttribute02',
+         irp.RowPointer,
+      'Ledger'
+      FROM
+         @InsertedRowPointer as irp;
+   END
+   ELSE IF @id = 'AR Dist'
+   BEGIN
+      INSERT INTO dbo.dim_attribute_override (value, attribute, subscriber_object_rowpointer,subscriber_object_name)
+      SELECT
+      @employee,
+         'AnalysisAttribute02',
+         irp.RowPointer,
+      'Ledger'
+      FROM
+         @InsertedRowPointer as irp;
+   END
 END
 
     SET @Severity = @@ERROR
