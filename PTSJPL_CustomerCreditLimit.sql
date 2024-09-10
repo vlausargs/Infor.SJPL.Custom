@@ -111,7 +111,7 @@ x.cust_num
 , artran.inv_num
 , artran.inv_date
 , artran.due_date
-, artran.amount
+, artran.inv_amount
 , artran.remaining
 , artran.overdue
 from 
@@ -145,8 +145,8 @@ join
 		, y.inv_num
 		, y.inv_date
 		, y.due_date
-		, y.amount
-		, (y.amount - y.payment) as remaining
+		, y.inv_amount
+		, (y.inv_amount - y.payment) as remaining
 		, y.overdue
 		from 
 			(
@@ -155,14 +155,25 @@ join
 				, art.inv_num
 				, art.inv_date
 				, art.due_date
-				, art.amount
-				, (select sum(art2.amount + art2.disc_amt) from artran_mst as art2 where art2.inv_num = art.inv_num and art2.type <> 'I' and art2.site_ref = art.site_ref) as payment
+				, (art.amount+art.sales_tax) as inv_amount
+				, ISNULL((select sum(art2.amount) from artran_mst as art2 where art2.apply_to_inv_num = art.inv_num and art2.type <> 'I' and art2.site_ref = art.site_ref),0) as payment
 				, CASE WHEN  DATEDIFF(day, art.due_date, GETDATE())> 0  then 1 else 0 end AS overdue
 				from artran_mst as art
 				where art.type ='I'
-			) as y 
+			) as y
+		UNION
+		select
+			art_cp.cust_num
+			, art_cp.inv_num
+			, art_cp.inv_date
+			, art_cp.due_date
+			, (art_cp.amount+art_cp.sales_tax) *-1 as inv_amount
+			, (art_cp.amount+art_cp.sales_tax) *-1 as remaining
+			, 0 as overdue
+			from artran_mst as art_cp
+			where art_cp.type  in ('C','P') and art_cp.apply_to_inv_num = '0'
 	) as artran on artran.cust_num = x.cust_num
-
+where artran.remaining !=0
 
 
 COMMIT TRANSACTION
