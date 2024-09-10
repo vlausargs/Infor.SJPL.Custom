@@ -156,7 +156,7 @@ join
 				, art.inv_date
 				, art.due_date
 				, (art.amount+art.sales_tax) as inv_amount
-				, ISNULL((select sum(art2.amount) from artran_mst as art2 where art2.apply_to_inv_num = art.inv_num and art2.type <> 'I' and art2.site_ref = art.site_ref),0) as payment
+				, ISNULL((select sum(art2.amount+art2.sales_tax) from artran_mst as art2 where art2.apply_to_inv_num = art.inv_num and art2.type <> 'I' and art2.site_ref = art.site_ref),0) as payment
 				, CASE WHEN  DATEDIFF(day, art.due_date, GETDATE())> 0  then 1 else 0 end AS overdue
 				from artran_mst as art
 				where art.type ='I'
