@@ -114,6 +114,7 @@ x.cust_num
 , artran.inv_amount
 , artran.remaining
 , artran.overdue
+, artran.overdue_days
 from 
 	(
 		select 
@@ -148,6 +149,7 @@ join
 		, y.inv_amount
 		, (y.inv_amount - y.payment) as remaining
 		, y.overdue
+		, y.overdue_days
 		from 
 			(
 				select 
@@ -158,6 +160,7 @@ join
 				, (art.amount+art.sales_tax) as inv_amount
 				, ISNULL((select sum(art2.amount+art2.sales_tax) from artran_mst as art2 where art2.apply_to_inv_num = art.inv_num and art2.type <> 'I' and art2.site_ref = art.site_ref),0) as payment
 				, CASE WHEN  DATEDIFF(day, art.due_date, GETDATE())> 0  then 1 else 0 end AS overdue
+				,  DATEDIFF(day, art.due_date, GETDATE()) overdue_days
 				from artran_mst as art
 				where art.type ='I'
 			) as y
@@ -170,6 +173,7 @@ join
 			, (art_cp.amount+art_cp.sales_tax) *-1 as inv_amount
 			, (art_cp.amount+art_cp.sales_tax) *-1 as remaining
 			, 0 as overdue
+			, 0 as overdue_days
 			from artran_mst as art_cp
 			where art_cp.type  in ('C','P') and art_cp.apply_to_inv_num = '0'
 	) as artran on artran.cust_num = x.cust_num
